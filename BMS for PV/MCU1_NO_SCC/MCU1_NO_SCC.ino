@@ -261,10 +261,3 @@ void loop() {
     espnow();
   }
 }
-
-float readChannel(ADS1115_MUX channel) {
-  float voltage = 0.0;
-  adc.setCompareChannels(channel);
-  voltage = adc.getResult_V();
-  return voltage;
-}
