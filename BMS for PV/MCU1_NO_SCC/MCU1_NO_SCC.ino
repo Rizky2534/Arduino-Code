@@ -4,9 +4,6 @@
 #include <esp_now.h>
 #include <ADS1115_WE.h> 
 
-#define I2C_ADDRESS 0x48
-ADS1115_WE adc = ADS1115_WE(I2C_ADDRESS);
-
 Adafruit_INA219 ina219_pv(0x45);
 Adafruit_INA219 ina219_bat(0x41);
 Adafruit_INA219 ina219_load(0x40);
