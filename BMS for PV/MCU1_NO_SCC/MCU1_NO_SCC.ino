@@ -2,7 +2,6 @@
 #include <Adafruit_INA219.h>
 #include <WiFi.h>
 #include <esp_now.h>
-#include <ADS1115_WE.h> 
 
 Adafruit_INA219 ina219_pv(0x45);
 Adafruit_INA219 ina219_bat(0x41);
