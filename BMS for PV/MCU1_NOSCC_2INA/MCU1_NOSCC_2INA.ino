@@ -45,15 +45,15 @@ bool temperatureOverThreshold = false;
 
 String success;
 
-const char* serverName = "https://script.google.com/macros/s/AKfycbwpo0mW9zCeTdfEHbCtlsNqqbHir41bfLzmGV-XTkhkjrWkUefl0TCrv0LLJIlEksE/exec";
+const char* serverName = "https://script.google.com/macros/s/AKfycbyuLLQlzM3VXZgojjsaudG3Mnmk9M-33mRZvLXRxKvx0U6hztTbh-Bw2unGAbXX6YVcEg/exec";
 
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", 25200, 60000);
 
 const char* ssid = "vivo 1938";
 const char* password = "sijitekowolu";
-const char* writeAPIKey = "0BJP7SWF0S163E0K";
-const long channelID = 2783708;
+const char* writeAPIKey = "3M8JHHQM06XZOOZ4";
+const long channelID = 2974454;
 
 WiFiClient client;
 
@@ -91,7 +91,7 @@ void setup(void) {
   WiFi.begin(ssid, password);
 
   if (!ina219_pv.begin()) {
-    Serial.println("Failed to find INA219 at 0x40");
+    Serial.println("Failed to find INA219 at 0x45");
     while (1);
   }
   if (!ina219_bat.begin()) {
@@ -120,9 +120,13 @@ void setup(void) {
   Serial.println("Wi-Fi connected!");
   ThingSpeak.begin(client);
 
-  // Initialize BH1750
-  if (!bh1750.begin() || !mlx.begin()) {
-    Serial.println("Sensor initialization failed!");
+  if (!bh1750.begin()) {
+    Serial.println("Failed to find BH1750");
+    while (1);
+  }
+
+  if (!mlx.begin()) {
+    Serial.println("Failed to find MLX");
     while (1);
   }
 
@@ -207,6 +211,14 @@ void applyProtection() {
     batteryOvercurrent = false;
     batteryUndervoltage = false;
     temperatureOverThreshold = false;
+  }
+}
+
+void lampControl() {
+  if (lightIntensity > 1000) {
+    digitalWrite(proteksi_load, LOW);
+  } else {
+    digitalWrite(proteksi_load, HIGH);
   }
 }
 
@@ -305,12 +317,12 @@ void senftoGsheet() {
 }
 
 void sendIoTData() {
-  ThingSpeak.setField(1, current_mA_1);
-  ThingSpeak.setField(2, PVVoltage);
-  ThingSpeak.setField(3, current_mA_2);
-  ThingSpeak.setField(4, batteryVoltage);
-  ThingSpeak.setField(7, temperature);
-  ThingSpeak.setField(8, lightIntensity);
+  ThingSpeak.setField(1, PVVoltage);
+  ThingSpeak.setField(2, current_mA_1);
+  ThingSpeak.setField(3, batteryVoltage);
+  ThingSpeak.setField(4, current_mA_2);
+  ThingSpeak.setField(5, temperature);
+  ThingSpeak.setField(6, lightIntensity);
   ThingSpeak.writeFields(channelID, writeAPIKey);
 }
 
@@ -320,6 +332,7 @@ void loop() {
     lastReadTime = currentMillis;
     readSensor();
     applyProtection();
+    lampControl();
   }
   if (currentMillis - lastDisplayTime >= displayInterval) {
     lastDisplayTime = currentMillis;
