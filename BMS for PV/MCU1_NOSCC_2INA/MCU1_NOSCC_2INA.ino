@@ -17,13 +17,14 @@ Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 
 const int proteksi_pv = 12;
 const int proteksi_bat = 13;
-const int proteksi_load = 14;
+const int proteksi_load = 15;
 
 const float overVoltageThreshold = 14.6;
 const float overCurrentThreshold = 1500.0;
 const float underVoltageThreshold = 10.9;
 const float intervalRecoveryThreshold = 0.5;
 const float temperatureThreshold = 53.0;
+const float intensityThreshold = 600.0;
 
 unsigned long lastReadTime = 0;
 unsigned long lastDisplayTime = 0;
@@ -45,15 +46,15 @@ bool temperatureOverThreshold = false;
 
 String success;
 
-const char* serverName = "https://script.google.com/macros/s/AKfycbyuLLQlzM3VXZgojjsaudG3Mnmk9M-33mRZvLXRxKvx0U6hztTbh-Bw2unGAbXX6YVcEg/exec";
+const char* serverName = "https://script.google.com/macros/s/AKfycbxY_ClU_HSkFj86gAru3TpjvUSEHMOm_hZYb-UDixxERl5RD766UlJ95l-IdCBa7P-pTw/exec";
 
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", 25200, 60000);
 
 const char* ssid = "vivo 1938";
 const char* password = "sijitekowolu";
-const char* writeAPIKey = "3M8JHHQM06XZOOZ4";
-const long channelID = 2974454;
+const char* writeAPIKey = "A0AE0C899BK6PSG2";
+const long channelID = 2667320;
 
 WiFiClient client;
 
@@ -128,11 +129,6 @@ void setup(void) {
   if (!mlx.begin()) {
     Serial.println("Failed to find MLX");
     while (1);
-  }
-
-  if (esp_now_init() != ESP_OK) {
-    Serial.println("Error initializing ESP-NOW");
-    return;
   }
 }
 
@@ -215,12 +211,17 @@ void applyProtection() {
 }
 
 void lampControl() {
-  if (lightIntensity > 1000) {
+  if (batteryUndervoltage || batteryOvervoltage || batteryOvercurrent || temperatureOverThreshold) {
     digitalWrite(proteksi_load, LOW);
   } else {
-    digitalWrite(proteksi_load, HIGH);
+    if (lightIntensity > intensityThreshold) {
+      digitalWrite(proteksi_load, LOW); // Daytime, turn off lamp
+    } else {
+      digitalWrite(proteksi_load, HIGH); // Nighttime, turn on lamp
+    }
   }
 }
+
 
 void displayData() {
   Serial.print("Photovoltaic Voltage: "); Serial.print(PVVoltage); Serial.println(" V");
